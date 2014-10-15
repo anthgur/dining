@@ -37,8 +37,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants
-(def base-url "http://foodpro.unh.edu/")
-
 (def menu-list-table-attrs
   {:border "0"
    :width "100%"
