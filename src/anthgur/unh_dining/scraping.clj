@@ -1,24 +1,46 @@
 (ns anthgur.unh-dining.scraping
   (:require [net.cgrand.enlive-html :as html]
-            [clojure.string :refer [replace split trim
-                                    capitalize lower-case]]))
+            [clojure.string :as st
+             :refer [split trim
+                     capitalize lower-case]]
+            [schema.core :as s]))
+
+(declare scrape-location
+         scrape-date scrape-menu
+         extract-menu-list-tables)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Forward declarations
-(declare scrape-date)
-(declare scrape-menu)
-(declare scrape-location)
-(declare extract-menu-list-tables)
+;; Schemas
+(def Recipe
+  {:name s/Str
+   :nutrition-info s/Keyword})
+
+(def Category
+  {:name s/Str
+   :recipes [Recipe]})
+
+(def Menu
+  {:meal-name s/Str
+   :categories [Category]})
+
+(def Day
+  {:date s/Str
+   :location s/Str
+   :menus [Menu]})
+
+(def DayUrl
+  {:date s/Str
+   :href s/Str})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
-(defn scrape-page
-  [html-string]
+(s/defn scrape-page :- Day
+  [html-string :- s/Str]
   {:date (scrape-date html-string)
    :location (scrape-location html-string)
    :menus (map scrape-menu (extract-menu-list-tables html-string))})
 
-(defn scrape-date-urls
+(s/defn scrape-date-urls :- DayUrl
   [html-string base-url]
   (let [menu-anchors (html/select html-string [:td.datebody :a])
         get-url (comp #(str base-url %) :href :attrs)
@@ -30,6 +52,7 @@
          (map #(zipmap [:date :href] %))
          butlast)))
 
+;; TODO implement fetching to catch net errors
 (defn get-page
   [url-str]
   (-> (java.net.URL. url-str)
@@ -80,7 +103,7 @@
   [html-string]
   (-> (html/select html-string [:div.shortmenutitle])
       first :content first
-      (replace #"Menus for " "")))
+      (st/replace #"Menus for " "")))
 
 (defn scrape-location
   [html-string]
@@ -117,7 +140,7 @@
                 (first (capitalize (first %)))
                 (rest %))
         lc-words
-        (-> (replace raw-category #"-" "")
+        (-> (st/replace raw-category #"-" "")
             trim lower-case)]
     (->> (split lc-words #" ")
          (map cap-firsts)
@@ -132,11 +155,11 @@
           :content first
           :content first))))
 
-(defn scrape-menu
+(s/defn scrape-menu :- Menu
   [menu-list-table]
   (let [make-recipe
         (fn [r n]
-          {:recipe r
+          {:name r
            :nutrition-info (scrape-nutrition-info n)})
         scraped
         (reduce
@@ -148,30 +171,8 @@
                            (make-recipe recipe tr)))]
              [(conj sections section)
               {:recipes []
-               :category ((comp format-category scrape-category) tr)}]))
+               :name ((comp format-category scrape-category) tr)}]))
          [[] nil] (extract-menu-trs menu-list-table))]
     {:menu (conj (rest (first scraped))
                  (second scraped))
-     :meal (scrape-meal-name menu-list-table)}))
-
-(comment
-  (def h
-    (-> (java.net.URL. "http://foodpro.unh.edu/shortmenu.asp?sName=University+Of+New+Hampshire+Hospitality+Services&locationNum=30&locationName=Philbrook+Dining+Hall&naFlag=1")
-        html/html-resource))
-  
-  (def f
-    (-> (java.net.URL. "http://foodpro.unh.edu/shortmenu.asp?sName=University+Of+New+Hampshire+Hospitality+Services&locationNum=30&locationName=Philbrook+Dining+Hall&naFlag=1&WeeksMenus=This+Week%27s+Menus&myaction=read&dtdate=10%2F23%2F2014")
-        html/html-resource))
-
-  (scrape-page h)
-
-  (clojure.pprint/pprint (scrape-menus h))
-
-  (->> (extract-menu-list-tables h)
-       first
-       extract-menu-trs
-       (map scrape-category)
-       (remove nil?))
-  (map scrape-nutrition-info (extract-menu-trs (first )))
-
-  (.parse (DateFormat/getDateInstance DateFormat/FULL) (str "Tuesday, October 21" ", 2014")))
+     :meal-name (scrape-meal-name menu-list-table)}))
