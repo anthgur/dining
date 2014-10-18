@@ -13,7 +13,7 @@
 ;; Schemas
 (def Recipe
   {:name s/Str
-   :nutrition-info s/Keyword})
+   :nutrition-info [s/Keyword]})
 
 (def Category
   {:name s/Str
@@ -173,6 +173,6 @@
               {:recipes []
                :name ((comp format-category scrape-category) tr)}]))
          [[] nil] (extract-menu-trs menu-list-table))]
-    {:menu (conj (rest (first scraped))
+    {:categories (conj (rest (first scraped))
                  (second scraped))
      :meal-name (scrape-meal-name menu-list-table)}))
