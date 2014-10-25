@@ -1,5 +1,5 @@
-(ns anthgur.unh-dining.scheduling
-  (:require [anthgur.unh-dining.scraping :refer
+(ns anthgur.dining.scheduling
+  (:require [anthgur.dining.scraper :refer
              [scrape-page scrape-date-urls get-page]]))
 
 (def base-url "http://foodpro.unh.edu/")
@@ -13,5 +13,4 @@
      :philly (fmt 30 "Philbrook+Dining+Hall")
      :stillings (fmt 10 "Stillings+Dining+Hall")}))
 
-(comment
-  (scrape-page (get-page (:hoco hall-menu-urls))))
+(schema.core/validate anthgur.unh-dining.scraping/Day (scrape-page (get-page (:philly hall-menu-urls))))

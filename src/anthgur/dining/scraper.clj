@@ -1,4 +1,4 @@
-(ns anthgur.unh-dining.scraping
+(ns anthgur.dining.scraper
   (:require [net.cgrand.enlive-html :as html]
             [clojure.string :as st
              :refer [split trim
@@ -12,25 +12,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Schemas
 (def Recipe
-  {:name s/Str
-   :nutrition-info [s/Keyword]})
+  {(s/required-key :name) s/Str
+   (s/required-key :nutrition-info) [s/Keyword]})
 
 (def Category
-  {:name s/Str
-   :recipes [Recipe]})
+  {(s/required-key :name) s/Str
+   (s/required-key :recipes) [Recipe]})
 
 (def Menu
-  {:meal-name s/Str
-   :categories [Category]})
+  {(s/required-key :meal-name) s/Str
+   (s/required-key :categories) [Category]})
 
 (def Day
-  {:date s/Str
-   :location s/Str
-   :menus [Menu]})
+  {(s/required-key :date) s/Str
+   (s/required-key :location) s/Str
+   (s/required-key :menus) [Menu]})
 
 (def DayUrl
-  {:date s/Str
-   :href s/Str})
+  {(s/required-key :date) s/Str
+   (s/required-key :href) s/Str})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
@@ -174,5 +174,5 @@
                :name ((comp format-category scrape-category) tr)}]))
          [[] nil] (extract-menu-trs menu-list-table))]
     {:categories (conj (rest (first scraped))
-                 (second scraped))
+                       (second scraped))
      :meal-name (scrape-meal-name menu-list-table)}))
