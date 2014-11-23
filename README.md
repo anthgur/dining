@@ -1,6 +1,8 @@
 dining
 ======
 
+[![Build Status](https://travis-ci.org/anthgur/dining.svg?branch=master)](https://travis-ci.org/anthgur/dining)
+
 This project was going to be a better (in my opinion) presentation of UNH's dining hall menus which are posted online.
 I thought it was difficult to navigate on a mobile device due to heavy nesting,
 so I was going to create a new presentation of the menu data.

@@ -19,11 +19,12 @@
   (testing "proper number of meals"
       (is (= 4 (count menus))))
   (testing "proper meal names"
-    (are [x y] (= x (:meal-name y))
-         "Breakfast"  (first menus)
-         "Lunch"      (second menus)
-         "Dinner"     (nth menus 2)
-         "Late Night" (nth menus 3))))
+    (let [[b l d ln] menus]
+      (are [x y] (= x (:meal-name y))
+           "Breakfast"  b
+           "Lunch"      l
+           "Dinner"     d
+           "Late Night" ln))))
 
 (deftest test-categories
   (is (= #{"Soup" "Salad" "Deli" "Grill" "Pizza" "Pasta" "Home Cooking"
